@@ -15,3 +15,10 @@
 # Extra
 1. Add a way for the user to change the api key
 2. maybe a way for them to create an accpunt via the cli
+
+
+
+- First we check if the api key exists by checking for the path
+- If it does, we use it
+- If it doesnt, we ask for it and save it
+- Then we update that path variable with the one given by user
