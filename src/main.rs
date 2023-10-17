@@ -6,6 +6,10 @@ use std::*;
 use std::process::exit;
 use std::fs::*;
 use std::io::Write;
+mod api_key;
+use api_key::ask_for_api_key;
+mod ask_user_to_sign_up;
+use ask_user_to_sign_up::ask_if_user_has_account;
 // #[derive(Parser, Debug)]
 // #[clap(name = "Weather CLI", version = "1.0", author = "Awais Amjad")]
 // struct Cli {
@@ -37,58 +41,12 @@ fn main() {
     // let cli = Cli::parse();
 
     // println!("The city is {}", cli.city);
-    ask_for_api_key();
-}
-//~ Gets the api key from the input
-fn read_user_input_for_api_key() -> String {
-    let mut user_input = String::new();
-    io::stdin()
-        .read_line(&mut user_input)
-        .expect("Failed to read input");
-    user_input.trim().to_string()
-}
-
-//~ Validates the length of the api key
-fn validate_api_key_length(api_key: &str, expected_len: usize) -> bool {
-    api_key.len() == expected_len
-}
-
-//~ Quits the program if the user enters "Quit"
-fn quit_program(input: &String){
-
-    if input.trim().eq_ignore_ascii_case("Quit"){
-        exit(0)
+    // ask_for_api_key();
+    // if ask_if_user_has_account().unwrap(){
+    //     ask_for_api_key();
+    // }
+    if let Some(true) = ask_if_user_has_account() {
+        ask_for_api_key();
     }
+    
 }
-
-//~ Asks the user for the api key
-fn ask_for_api_key() {
-    const API_KEY_LEN: usize = 32;
-
-    loop {
-        println!("Enter API key: ");
-        let api_key = read_user_input_for_api_key();
-        quit_program(&api_key);
-        if !validate_api_key_length(&api_key, API_KEY_LEN) {
-            println!(
-                "\nAPI key must be 32 digits long\nYour input was {} digits long.\nEnter again",
-                api_key.len()
-            );
-        } else {
-        //    write_api_key_file()
-        create_txt_file_for_api_key(&api_key);
-        exit(0)
-        }
-    }
-}
-
-//~ Creates a txt file for the api key
-fn create_txt_file_for_api_key(api_key : &String){
-    let mut txt_file = File::create("api_key_txt_file.txt").expect("Failed to create file");
-    txt_file.write_all(api_key.as_bytes()).expect("Failed to write file");
-
-    println!("Successfully written file");
-}
-// fn write_api_key_file(api_key: String){
-//     exit(0)
-// }
