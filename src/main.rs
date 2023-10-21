@@ -1,25 +1,27 @@
 // use std::collections::HashMap;
-// use clap::Parser;
-use serde::{ Deserialize, Serialize };
+use clap::Parser;
+use lazy_static::lazy_static;
 use serde_json::*;
+use iso_country::*;
 mod api_key;
-use api_key::{ ask_for_api_key, if_api_key_exists, create_txt_file_for_api_key };
 mod ask_user_to_sign_up;
-use ask_user_to_sign_up::ask_if_user_has_account;
-use std::fs::{ File, self };
-use std::io::{ self, Read };
-use std::path::Path;
+use std::collections::HashMap;
+use std::fmt::format;
+use std::io;
 mod get_weather_data;
 // use get_weather_data::get_api_from_txt_file;
-// #[derive(Parser, Debug)]
-// #[clap(name = "Weather CLI", version = "1.0", author = "Awais Amjad")]
-// struct Cli {
-//     /// The city to check the weather for
-//     #[clap(short, long, default_value = "London")]
-//     city: String,
-// }
 
-
+//~ Makes a global static variable for the default city value used in the city (CLI) argument
+lazy_static! {
+    static ref DEFAULT_CITY_VALUE: String = "London".to_string();
+}
+#[derive(Parser, Debug)]
+#[clap(name = "Weather CLI", version = "1.0", author = "Awais Amjad")]
+struct Cli {
+    /// The city to check the weather for
+    #[clap(short, long, default_value = DEFAULT_CITY_VALUE.as_str())]
+    city: String,
+}
 
 // fn main() {
 //     let mut api_key_path = String::new();
@@ -137,7 +139,12 @@ struct Sys {
     sunset: u64,
 }
 fn main() -> Result<()> {
-    let city = "London";
+    let cli = Cli::parse();
+    // let mut city = String::new();
+    // io::stdin()
+    //     .read_line(&mut city)
+    //     .expect("Failed to read City");
+    let city = cli.city;
     let api_key = "2000dfd2364e06482676260c48fde1c9";
     let url = format!(
         "https://api.openweathermap.org/data/2.5/weather?appid={}&q={}",
@@ -145,8 +152,91 @@ fn main() -> Result<()> {
         city
     );
     let resp = reqwest::blocking::get(url)?;
-    let body : Value = resp.json()?;
-    println!("{:#?}", body);
+    let body: WeatherData = resp.json()?;
 
+    // println!("{:#?}",body.weather[0].id);
+    default_output(body);
+    
     Ok(())
 }
+
+fn degrees_celsius(value: f64) -> f64 {
+    let rounded_value = (value - 273.15).round() * 100.0;
+    rounded_value / 100.0
+}
+
+fn default_output(body: WeatherData) {
+    let weather_main = &body.weather[0].main;
+    let weather_description = &body.weather[0].description;
+
+    let weather = format!(
+        "Weather:\n  Main: {}\n  Description: {}",
+        weather_main,
+        weather_description
+    );
+
+    let temp = format!("Temperature: {}", degrees_celsius(body.main.temp));
+    let feels_like = format!("Feels Like: {}", degrees_celsius(body.main.feels_like));
+    let temp_min = format!("Minimum Temperature: {}", degrees_celsius(body.main.temp_min));
+    let temp_max = format!("Maximum Temperature: {}", degrees_celsius(body.main.temp_max));
+    let pressure = format!("Pressure: {}", body.main.pressure);
+    let humidity = format!("Humidity: {}", body.main.humidity);
+
+    let main = format!(
+        "\nMain:\n {}\n {}\n {}\n {}\n {}\n {}",
+        temp,
+        feels_like,
+        temp_min,
+        temp_max,
+        pressure,
+        humidity
+    );
+
+    let visibility = format!("\nVisibility: {}", body.visibility);
+
+    let wind_speed = format!("Wind Speed: {}", body.wind.speed);
+    let wind_deg = format!("Wind Degree: {}", body.wind.deg);
+
+    let wind = format!("\nWind:\n {}\n {}", wind_speed, wind_deg);
+
+    let clouds = format!("\nClouds: {}", body.clouds.all);
+
+    let sys_country = format!("Country: {}", body.sys.country);
+    let full_country_name = format!("Full Country Name: {}", get_full_country_name_from_small(&body.sys.country)); //~ has a reference which converts String to &str
+    let sys_sunrise = format!("Sunrise: {}", body.sys.sunrise);
+    let sys_sunset = format!("Sunset: {}", body.sys.sunset);
+
+    let sys = format!("\nSys:\n {}\n {}\n {}\n {}", sys_country, full_country_name, sys_sunrise, sys_sunset);
+
+    let timezone = format!("\nTimezone: {}", body.timezone);
+    let name = format!("\nID: {}", body.name);
+
+    let output = format!(
+        "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+        weather,
+        main,
+        visibility,
+        wind,
+        clouds,
+        sys,
+        timezone,
+        name
+    );
+
+    println!("{}", output)
+}
+
+fn get_full_country_name_from_small(small_name:&str) -> &str{
+    let mut countries = iso_country::data::all();
+    countries.sort_by_key(|country| country.alpha2);
+    let mut countries_hashmap = HashMap::new();
+    for country in countries {
+        countries_hashmap.insert( country.alpha2, country.name);
+    }
+    let full_country_name = countries_hashmap.get(&small_name);
+    if let Some(value) = full_country_name{
+        *value //~ the asterik derefrences it - goes from &&str to &str
+    } else{
+        "Error"
+    }
+}//Option<&str>

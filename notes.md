@@ -22,3 +22,76 @@
 - If it does, we use it
 - If it doesnt, we ask for it and save it
 - Then we update that path variable with the one given by user
+
+
+
+
+# Important fields
+- Weather
+  - main
+  - description
+- Main
+  - temp
+  - feels_like
+  - temp_min
+  - temp_max
+  - pressure
+  - humidity
+- visibility
+- wind
+  - speed
+  - deg
+- clouds
+- Sys
+  - country
+  - sunrise
+  - sunset
+- timezone
+- name 
+
+output:
+ ```
+WeatherData {
+    coord: Coord {
+        lon: -0.1257,
+        lat: 51.5085,
+    },
+    weather: [
+        Weather {
+            id: 804,
+            main: "Clouds",
+            description: "overcast clouds",
+            icon: "04n",
+        },
+    ],
+    base: "stations",
+    main: Main {
+        temp: 283.64,
+        feels_like: 283.2,
+        temp_min: 282.25,
+        temp_max: 285.01,
+        pressure: 991,
+        humidity: 94,
+    },
+    visibility: 10000,
+    wind: Wind {
+        speed: 5.14,
+        deg: 290,
+    },
+    clouds: Clouds {
+        all: 100,
+    },
+    dt: 1697916440,
+    sys: Sys {
+        sys_type: 2,
+        id: 2006068,
+        country: "GB",
+        sunrise: 1697870029,
+        sunset: 1697907375,
+    },
+    timezone: 3600,
+    id: 2643743,
+    name: "London",
+    cod: 200,
+}
+```

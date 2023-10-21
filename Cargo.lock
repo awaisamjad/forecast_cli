@@ -240,6 +240,8 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "error-chain",
+ "iso_country",
+ "lazy_static",
  "reqwest",
  "serde",
  "serde_json",
@@ -456,6 +458,15 @@ name = "ipnet"
 version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28b29a3cd74f0f4598934efe3aeba42bae0eb4680554128851ebbecb02af14e6"
+
+[[package]]
+name = "iso_country"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20633e788d3948ea7336861fdb09ec247f5dae4267e8f0743fa97de26c28624d"
+dependencies = [
+ "lazy_static",
+]
 
 [[package]]
 name = "itoa"
